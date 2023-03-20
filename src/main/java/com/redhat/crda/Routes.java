@@ -1,7 +1,9 @@
 package com.redhat.crda;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.model.dataformat.JsonLibrary;
 import org.apache.camel.model.rest.RestBindingMode;
+import org.apache.camel.model.rest.RestParamType;
 
 public class Routes extends RouteBuilder {
 
@@ -12,11 +14,14 @@ public class Routes extends RouteBuilder {
 
         rest("/hello")
                 .get()
+                .param().name("test").type(RestParamType.query).dataType("String").endParam()
                 .to("direct:hello");
 
 
         from("direct:hello")
-                .setBody().constant("Hello World");
+                .toD("https://httpbin.org/get?bridgeEndpoint=true&test=${header.test}")
+                .unmarshal()
+                .json(JsonLibrary.Jackson);
 
     }
 }
